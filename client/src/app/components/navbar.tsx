@@ -4,7 +4,7 @@ import {
     SignedIn,
     SignedOut,
     UserButton
-  } from '@clerk/nextjs'
+} from '@clerk/nextjs';
 
 const Navbar: React.FC = () => {
     return (
@@ -12,7 +12,14 @@ const Navbar: React.FC = () => {
             <div className="text-white text-xl font-bold">
                 <a href="/">CCNY PHD HUB</a>
             </div>
-            <div>
+            <div className="flex space-x-4">
+                <a href="/about" className="text-white px-4 py-2 rounded hover:bg-[#6042a1]">ABOUT</a>
+                <a href="/academics" className="text-white px-4 py-2 rounded hover:bg-[#6042a1]">ACADEMICS</a>
+                <a href="/research" className="text-white px-4 py-2 rounded hover:bg-[#6042a1]">RESEARCH</a>
+                <a href="/engage" className="text-white px-4 py-2 rounded hover:bg-[#6042a1]">ENGAGE</a>
+                <a href="/resources" className="text-white px-4 py-2 rounded hover:bg-[#6042a1]">RESOURCES</a>
+            </div>
+            <div className="w-48 flex justify-end">
                 <SignedOut>
                     <SignUpButton>
                         <button className="text-white px-4 py-2 rounded mr-2">
@@ -26,7 +33,7 @@ const Navbar: React.FC = () => {
                     </SignInButton>
                 </SignedOut>
                 <SignedIn>
-                <UserButton
+                    <UserButton
                         showName
                         appearance={{
                             elements: {
