@@ -54,23 +54,58 @@ export async function POST(req: Request) {
     });
   }
 
-  const { id, email_addresses, first_name, last_name } = evt.data;
+  const { id, email_addresses, first_name, last_name, external_accounts } = evt.data;
   const eventType = evt.type;
 
   console.log(`Webhook with an ID of ${id} and type of ${eventType}`);
   console.log('Webhook body:', body);
 
   if (eventType === 'user.updated' || eventType === 'user.created') {
+    let linkedinProfile = null;
+
+    // Extract LinkedIn profile information
+    if (external_accounts) {
+      const linkedinAccount = external_accounts.find(account => account.provider === 'oauth_linkedin_oidc');
+      if (linkedinAccount) {
+        const accessToken = process.env.LINKEDIN_ACCESS_TOKEN;
+
+        // Fetch LinkedIn user data
+        try {
+          const response = await fetch('https://api.linkedin.com/v2/me', {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (response.ok) {
+            linkedinProfile = await response.json();
+          } else {
+            console.error('Error fetching LinkedIn profile:', response.statusText);
+          }
+        } catch (error) {
+          console.error('Error fetching LinkedIn profile:', error);
+        }
+      }
+    }
+
     const query = `
-      INSERT INTO users (id, email, first_name, last_name)
-      VALUES ($1, $2, $3, $4)
+      INSERT INTO users (id, email, first_name, last_name, linkedin_profile)
+      VALUES ($1, $2, $3, $4, $5)
       ON CONFLICT (id) DO UPDATE
       SET email = EXCLUDED.email,
           first_name = EXCLUDED.first_name,
-          last_name = EXCLUDED.last_name;
+          last_name = EXCLUDED.last_name,
+          linkedin_profile = EXCLUDED.linkedin_profile;
     `;
 
-    const values = [id, email_addresses[0].email_address, first_name, last_name];
+    const values = [
+      id,
+      email_addresses[0].email_address,
+      first_name,
+      last_name,
+      linkedinProfile ? JSON.stringify(linkedinProfile) : null,
+    ];
 
     try {
       await client.query(query, values);
