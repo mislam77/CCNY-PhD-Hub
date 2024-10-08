@@ -8,7 +8,7 @@ import {
 
 const Navbar: React.FC = () => {
     return (
-        <nav className="bg-[#7D5CC6] p-4 flex justify-between items-center h-24">
+        <nav className="bg-[#7D5CC6] p-4 flex justify-between items-center h-24 sticky top-0 z-50 shadow-md">
             <div className="text-white text-xl font-bold">
                 <a href="/">CCNY PHD HUB</a>
             </div>
