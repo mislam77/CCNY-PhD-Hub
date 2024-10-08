@@ -8,7 +8,7 @@ import {
 
 const Navbar: React.FC = () => {
     return (
-        <nav className="bg-[#6c47ff] p-4 flex justify-between items-center h-24">
+        <nav className="bg-[#7D5CC6] p-4 flex justify-between items-center h-24">
             <div className="text-white text-xl font-bold">
                 <a href="/">CCNY PHD HUB</a>
             </div>
@@ -20,7 +20,7 @@ const Navbar: React.FC = () => {
                         </button>
                     </SignUpButton>
                     <SignInButton>
-                        <button className="bg-white text-[#6c47ff] px-4 py-2 rounded">
+                        <button className="bg-white text-[#7D5CC6] px-4 py-2 rounded">
                             Sign In
                         </button>
                     </SignInButton>
