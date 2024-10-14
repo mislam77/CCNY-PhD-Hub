@@ -114,6 +114,17 @@ export async function POST(req: Request) {
       console.error('Error saving user information:', error);
       return new Response('Internal Server Error', { status: 500 });
     }
+  } else if (eventType === 'user.deleted') {
+    const query = 'DELETE FROM users WHERE id = $1';
+    const values = [id];
+
+    try {
+      await client.query(query, values);
+      console.log('User information deleted');
+    } catch (error) {
+      console.error('Error deleting user information:', error);
+      return new Response('Internal Server Error', { status: 500 });
+    }
   }
 
   return new Response('', { status: 200 });
