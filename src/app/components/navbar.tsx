@@ -3,8 +3,8 @@ import {
     SignUpButton,
     SignedIn,
     SignedOut,
-    UserButton
 } from '@clerk/nextjs';
+import UserButton from './userbutton';
 
 const Navbar: React.FC = () => {
     return (
@@ -33,18 +33,7 @@ const Navbar: React.FC = () => {
                     </SignInButton>
                 </SignedOut>
                 <SignedIn>
-                    <UserButton
-                        showName
-                        appearance={{
-                            elements: {
-                                userButtonAvatarBox: 'bg-white w-12 h-12',
-                                userButtonBox: 'bg-white rounded-lg p-2',
-                                userButtonPopoverCard: 'bg-white shadow-lg rounded-lg p-4',
-                                userButtonPopoverActionButton: 'text-[#6c47ff] hover:bg-gray-100',
-                                userButtonPopoverActionButtonText: 'text-[#6c47ff]',
-                            },
-                        }}
-                    />
+                    <UserButton />
                 </SignedIn>
             </div>
         </nav>
