@@ -54,7 +54,7 @@ export async function POST(req: Request) {
     });
   }
 
-  const { id, email_addresses, first_name, last_name, external_accounts } = evt.data;
+  const { id, email_addresses, first_name, last_name, username, external_accounts } = evt.data;
   const eventType = evt.type;
 
   console.log(`Webhook with an ID of ${id} and type of ${eventType}`);
@@ -90,13 +90,14 @@ export async function POST(req: Request) {
     }
 
     const query = `
-      INSERT INTO users (id, email, first_name, last_name, linkedin_profile)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO users (id, email, first_name, last_name, username, external_accounts)
+      VALUES ($1, $2, $3, $4, $5, $6)
       ON CONFLICT (id) DO UPDATE
       SET email = EXCLUDED.email,
           first_name = EXCLUDED.first_name,
           last_name = EXCLUDED.last_name,
-          linkedin_profile = EXCLUDED.linkedin_profile;
+          username = EXCLUDED.username,
+          external_accounts = EXCLUDED.external_accounts;
     `;
 
     const values = [
@@ -104,7 +105,8 @@ export async function POST(req: Request) {
       email_addresses[0].email_address,
       first_name,
       last_name,
-      linkedinProfile ? JSON.stringify(linkedinProfile) : null,
+      username,
+      external_accounts ? JSON.stringify(external_accounts) : null,
     ];
 
     try {
