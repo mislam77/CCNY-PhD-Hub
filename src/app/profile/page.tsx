@@ -4,36 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { FaEdit } from 'react-icons/fa';
 
-interface Profile {
-    username: string;
-    email: string;
-    contact_info: {
-        phone: string;
-        dob: string;
-        location: string;
-    };
-    bio: string;
-    experiences: Array<{
-        company_name: string;
-        location: string;
-        experience_type: string;
-        start_date: string;
-        end_date: string;
-        description: string;
-    }>;
-    portfolio: {
-        github: string;
-        linkedin: string;
-        site: string;
-    };
-    education: Array<{
-        college_name: string;
-        major: string;
-        start_date: string;
-        end_date: string;
-    }>;
-}
-
 const ProfilePage: React.FC = () => {
     const { isLoaded, isSignedIn, user } = useUser();
     const [profile, setProfile] = useState<Profile | null>(null);
@@ -66,7 +36,7 @@ const ProfilePage: React.FC = () => {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ userId: user.id, section: editSection, data: formData[editSection] }),
+                    body: JSON.stringify({ userId: user.id, data: formData }),
                 });
                 if (response.ok) {
                     const updatedProfile = await response.json();
@@ -94,17 +64,33 @@ const ProfilePage: React.FC = () => {
         return <div>Not signed in</div>;
     }
 
-    const handleEditClick = (section: string) => {
+    const handleEditClick = (section) => {
         setEditSection(section);
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+        const keys = name.split('.');
+        if (keys.length > 1) {
+            setFormData((prevData) => {
+                const updatedData = { ...prevData };
+                let current = updatedData;
+                for (let i = 0; i < keys.length - 1; i++) {
+                    if (!current[keys[i]]) {
+                        current[keys[i]] = {};
+                    }
+                    current = current[keys[i]];
+                }
+                current[keys[keys.length - 1]] = value;
+                return updatedData;
+            });
+        } else {
+            setFormData({ ...formData, [name]: value });
+        }
     };
 
     return (
-        <div className="container mx-auto px-48 py-8">
+        <div className="container mx-auto p-4">
             {profile && (
                 <>
                     <div className="bg-white shadow-md rounded-lg p-6 mb-6 relative">
@@ -118,13 +104,15 @@ const ProfilePage: React.FC = () => {
                             />
                             <div>
                                 {editSection === 'profile' ? (
-                                    <input
-                                        type="text"
-                                        name="username"
-                                        value={formData.username || ''}
-                                        onChange={handleChange}
-                                        className="w-full p-2 border border-gray-300 rounded"
-                                    />
+                                    <>
+                                        <input
+                                            type="text"
+                                            name="username"
+                                            value={formData.username || ''}
+                                            onChange={handleChange}
+                                            className="w-full p-2 border border-gray-300 rounded"
+                                        />
+                                    </>
                                 ) : (
                                     <>
                                         <h3 className="text-xl font-semibold">{profile.username || 'No information'}</h3>
@@ -140,7 +128,7 @@ const ProfilePage: React.FC = () => {
                         <FaEdit className="absolute top-4 right-4 text-gray-500 cursor-pointer" onClick={() => handleEditClick('contact_info')} />
                         {editSection === 'contact_info' ? (
                             <>
-                                <label>Email:</label>
+                                <label className="block mb-1">Email:</label>
                                 <input
                                     type="text"
                                     name="email"
@@ -148,27 +136,27 @@ const ProfilePage: React.FC = () => {
                                     onChange={handleChange}
                                     className="w-full p-2 border border-gray-300 rounded mb-2"
                                 />
-                                <label>Phone:</label>
+                                <label className="block mb-1">Phone:</label>
                                 <input
                                     type="text"
-                                    name="phone"
-                                    value={formData.phone || ''}
+                                    name="contact_info.phone"
+                                    value={formData.contact_info?.phone || ''}
                                     onChange={handleChange}
                                     className="w-full p-2 border border-gray-300 rounded mb-2"
                                 />
-                                <label>Date of Birth:</label>
+                                <label className="block mb-1">Date of Birth:</label>
                                 <input
                                     type="text"
-                                    name="dob"
-                                    value={formData.dob || ''}
+                                    name="contact_info.dob"
+                                    value={formData.contact_info?.dob || ''}
                                     onChange={handleChange}
                                     className="w-full p-2 border border-gray-300 rounded mb-2"
                                 />
-                                <label>Location:</label>
+                                <label className="block mb-1">Location:</label>
                                 <input
                                     type="text"
-                                    name="location"
-                                    value={formData.location || ''}
+                                    name="contact_info.location"
+                                    value={formData.contact_info?.location || ''}
                                     onChange={handleChange}
                                     className="w-full p-2 border border-gray-300 rounded mb-2"
                                 />
@@ -187,15 +175,13 @@ const ProfilePage: React.FC = () => {
                         <h2 className="text-2xl font-bold mb-4">Bio</h2>
                         <FaEdit className="absolute top-4 right-4 text-gray-500 cursor-pointer" onClick={() => handleEditClick('bio')} />
                         {editSection === 'bio' ? (
-                            <>
-                                <input
-                                    type="text"
-                                    name="bio"
-                                    value={formData.bio || ''}
-                                    onChange={handleChange}
-                                    className="w-full p-2 border border-gray-300 rounded"
-                                />
-                            </>
+                            <input
+                                type="text"
+                                name="bio"
+                                value={formData.bio || ''}
+                                onChange={handleChange}
+                                className="w-full p-2 border border-gray-300 rounded"
+                            />
                         ) : (
                             <p>{profile.bio || 'No information'}</p>
                         )}
@@ -207,7 +193,6 @@ const ProfilePage: React.FC = () => {
                         {editSection === 'experiences' ? (
                             profile.experiences?.map((exp, index) => (
                                 <div key={index} className="mb-4">
-                                    <label>Company Name:</label>
                                     <input
                                         type="text"
                                         name={`experiences[${index}].company_name`}
@@ -215,7 +200,6 @@ const ProfilePage: React.FC = () => {
                                         onChange={handleChange}
                                         className="w-full p-2 border border-gray-300 rounded mb-2"
                                     />
-                                    <label>Location:</label>
                                     <input
                                         type="text"
                                         name={`experiences[${index}].location`}
@@ -223,7 +207,6 @@ const ProfilePage: React.FC = () => {
                                         onChange={handleChange}
                                         className="w-full p-2 border border-gray-300 rounded mb-2"
                                     />
-                                    <label>Experience Type:</label>
                                     <input
                                         type="text"
                                         name={`experiences[${index}].experience_type`}
@@ -231,7 +214,6 @@ const ProfilePage: React.FC = () => {
                                         onChange={handleChange}
                                         className="w-full p-2 border border-gray-300 rounded mb-2"
                                     />
-                                    <label>Start Date:</label>
                                     <input
                                         type="text"
                                         name={`experiences[${index}].start_date`}
@@ -239,7 +221,6 @@ const ProfilePage: React.FC = () => {
                                         onChange={handleChange}
                                         className="w-full p-2 border border-gray-300 rounded mb-2"
                                     />
-                                    <label>End Date:</label>
                                     <input
                                         type="text"
                                         name={`experiences[${index}].end_date`}
@@ -247,7 +228,6 @@ const ProfilePage: React.FC = () => {
                                         onChange={handleChange}
                                         className="w-full p-2 border border-gray-300 rounded mb-2"
                                     />
-                                    <label>Description:</label>
                                     <input
                                         type="text"
                                         name={`experiences[${index}].description`}
@@ -276,7 +256,7 @@ const ProfilePage: React.FC = () => {
                         <FaEdit className="absolute top-4 right-4 text-gray-500 cursor-pointer" onClick={() => handleEditClick('portfolio')} />
                         {editSection === 'portfolio' ? (
                             <>
-                                <label>GitHub:</label>
+                                <label className="block mb-1">GitHub:</label>
                                 <input
                                     type="text"
                                     name="portfolio.github"
@@ -284,7 +264,7 @@ const ProfilePage: React.FC = () => {
                                     onChange={handleChange}
                                     className="w-full p-2 border border-gray-300 rounded mb-2"
                                 />
-                                <label>LinkedIn:</label>
+                                <label className="block mb-1">LinkedIn:</label>
                                 <input
                                     type="text"
                                     name="portfolio.linkedin"
@@ -292,7 +272,7 @@ const ProfilePage: React.FC = () => {
                                     onChange={handleChange}
                                     className="w-full p-2 border border-gray-300 rounded mb-2"
                                 />
-                                <label>Portfolio Site:</label>
+                                <label className="block mb-1">Portfolio Site:</label>
                                 <input
                                     type="text"
                                     name="portfolio.site"
@@ -303,9 +283,9 @@ const ProfilePage: React.FC = () => {
                             </>
                         ) : (
                             <>
-                                <p>GitHub: <a href={profile.portfolio?.github || '#'} className="text-blue-500">{profile.portfolio?.github || 'No information'}</a></p>
-                                <p>LinkedIn: <a href={profile.portfolio?.linkedin || '#'} className="text-blue-500">{profile.portfolio?.linkedin || 'No information'}</a></p>
-                                <p>Portfolio Site: <a href={profile.portfolio?.site || '#'} className="text-blue-500">{profile.portfolio?.site || 'No information'}</a></p>
+                                <p>GitHub: <a href={profile.portfolio?.github || '#'} target="_blank" rel="noopener noreferrer" className="text-blue-500">{profile.portfolio?.github || 'No information'}</a></p>
+                                <p>LinkedIn: <a href={profile.portfolio?.linkedin || '#'} target="_blank" rel="noopener noreferrer" className="text-blue-500">{profile.portfolio?.linkedin || 'No information'}</a></p>
+                                <p>Portfolio Site: <a href={profile.portfolio?.site || '#'} target="_blank" rel="noopener noreferrer" className="text-blue-500">{profile.portfolio?.site || 'No information'}</a></p>
                             </>
                         )}
                     </div>
@@ -314,64 +294,60 @@ const ProfilePage: React.FC = () => {
                         <h2 className="text-2xl font-bold mb-4">Education</h2>
                         <FaEdit className="absolute top-4 right-4 text-gray-500 cursor-pointer" onClick={() => handleEditClick('education')} />
                         {editSection === 'education' ? (
-                            profile.education?.map((edu, index) => (
-                                <div key={index} className="mb-4">
-                                    <label>College Name:</label>
-                                    <input
-                                        type="text"
-                                        name={`education[${index}].college_name`}
-                                        value={formData.education?.[index]?.college_name || ''}
-                                        onChange={handleChange}
-                                        className="w-full p-2 border border-gray-300 rounded mb-2"
-                                    />
-                                    <label>Major:</label>
-                                    <input
-                                        type="text"
-                                        name={`education[${index}].major`}
-                                        value={formData.education?.[index]?.major || ''}
-                                        onChange={handleChange}
-                                        className="w-full p-2 border border-gray-300 rounded mb-2"
-                                    />
-                                    <label>Start Date:</label>
-                                    <input
-                                        type="text"
-                                        name={`education[${index}].start_date`}
-                                        value={formData.education?.[index]?.start_date || ''}
-                                        onChange={handleChange}
-                                        className="w-full p-2 border border-gray-300 rounded mb-2"
-                                    />
-                                    <label>End Date:</label>
-                                    <input
-                                        type="text"
-                                        name={`education[${index}].end_date`}
-                                        value={formData.education?.[index]?.end_date || ''}
-                                        onChange={handleChange}
-                                        className="w-full p-2 border border-gray-300 rounded mb-2"
-                                    />
-                                </div>
-                            ))
+                        profile.education?.map((edu, index) => (
+                            <div key={index} className="mb-4">
+                            <input
+                                type="text"
+                                name={`education[${index}].college_name`}
+                                value={formData.education?.[index]?.college_name || ''}
+                                onChange={handleChange}
+                                className="w-full p-2 border border-gray-300 rounded mb-2"
+                            />
+                            <input
+                                type="text"
+                                name={`education[${index}].major`}
+                                value={formData.education?.[index]?.major || ''}
+                                onChange={handleChange}
+                                className="w-full p-2 border border-gray-300 rounded mb-2"
+                            />
+                            <input
+                                type="text"
+                                name={`education[${index}].start_date`}
+                                value={formData.education?.[index]?.start_date || ''}
+                                onChange={handleChange}
+                                className="w-full p-2 border border-gray-300 rounded mb-2"
+                            />
+                            <input
+                                type="text"
+                                name={`education[${index}].end_date`}
+                                value={formData.education?.[index]?.end_date || ''}
+                                onChange={handleChange}
+                                className="w-full p-2 border border-gray-300 rounded mb-2"
+                            />
+                            </div>
+                        ))
                         ) : (
-                            profile.education?.map((edu, index) => (
-                                <div key={index} className="mb-4">
-                                    <h3 className="text-xl font-semibold">{edu.college_name || 'No information'}</h3>
-                                    <p>Major: {edu.major || 'No information'}</p>
-                                    <p>Start Date: {edu.start_date || 'No information'}</p>
-                                    <p>End Date: {edu.end_date || 'No information'}</p>
-                                </div>
-                            ))
+                        profile.education?.map((edu, index) => (
+                            <div key={index} className="mb-4">
+                            <h3 className="text-xl font-semibold">{edu.college_name || 'No information'}</h3>
+                            <p>Major: {edu.major || 'No information'}</p>
+                            <p>Start Date: {edu.start_date || 'No information'}</p>
+                            <p>End Date: {edu.end_date || 'No information'}</p>
+                            </div>
+                        ))
                         )}
                     </div>
 
                     {editSection && (
                         <button
-                            onClick={updateProfile}
-                            className="bg-blue-500 text-white px-4 py-2 rounded"
+                        onClick={updateProfile}
+                        className="bg-blue-500 text-white px-4 py-2 rounded"
                         >
-                            Save
+                        Save
                         </button>
                     )}
-                </>
-            )}
+                    </>
+                )}
         </div>
     );
 };

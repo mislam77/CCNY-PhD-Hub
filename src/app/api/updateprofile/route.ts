@@ -15,22 +15,31 @@ const client = new Client({
 client.connect().catch(err => console.error('Error connecting to the database:', err));
 
 export async function POST(req: NextRequest) {
-  const { userId, section, data } = await req.json();
+  const { userId, data } = await req.json();
 
-  if (!userId || !section || !data) {
-    console.error('User ID, section, and data are required');
-    return NextResponse.json({ error: 'User ID, section, and data are required' }, { status: 400 });
+  if (!userId || !data) {
+    console.error('User ID and data are required');
+    return NextResponse.json({ error: 'User ID and data are required' }, { status: 400 });
   }
 
-  console.log(`Updating profile for user ID: ${userId}, section: ${section}`);
+  console.log(`Updating profile for user ID: ${userId}`);
 
   const query = `
     UPDATE users
-    SET ${section} = $1
-    WHERE id = $2
+    SET contact_info = $1,
+        experiences = $2,
+        portfolio = $3,
+        education = $4
+    WHERE id = $5
     RETURNING *;
   `;
-  const values = [data, userId];
+  const values = [
+    data.contact_info ? JSON.stringify(data.contact_info) : null,
+    data.experiences ? JSON.stringify(data.experiences) : null,
+    data.portfolio ? JSON.stringify(data.portfolio) : null,
+    data.education ? JSON.stringify(data.education) : null,
+    userId,
+  ];
 
   try {
     const result = await client.query(query, values);
