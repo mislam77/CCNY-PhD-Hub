@@ -4,12 +4,25 @@ import React, { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useParams } from 'next/navigation';
 
-const PostPage: React.FC = () => {
-  const { isLoaded, isSignedIn, user } = useUser();
-  const { postId } = useParams();
+type Comment = {
+  id: string;
+  text: string;
+  author_username: string;
+};
 
-  const [post, setPost] = useState(null);
-  const [comments, setComments] = useState([]);
+type Post = {
+  title: string;
+  author_username: string;
+  content: {
+    text: string;
+  };
+};
+
+const PostPage: React.FC = () => {
+  const { isSignedIn, user } = useUser();
+  const { postId } = useParams();
+  const [post, setPost] = useState<Post | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
 
   const fetchPost = async () => {
     try {
@@ -39,7 +52,7 @@ const PostPage: React.FC = () => {
     }
   };
 
-  const handleCreateComment = async (text, replyToId = null) => {
+  const handleCreateComment = async (text: string, replyToId: string | null = null) => {
     if (!isSignedIn || !user) return;
 
     try {
@@ -97,7 +110,7 @@ const PostPage: React.FC = () => {
 const CreateCommentForm: React.FC<{ onCreateComment: (text: string, replyToId?: string | null) => void }> = ({ onCreateComment }) => {
   const [text, setText] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onCreateComment(text);
     setText('');

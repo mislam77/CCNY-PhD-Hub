@@ -4,15 +4,26 @@ import React, { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 
+interface Content {
+  text: string;
+}
+
+interface Post {
+  id: string;
+  title: string;
+  content: Content;
+  author_username: string;
+}
+
 const ForumPage: React.FC = () => {
-  const { isLoaded, isSignedIn, user } = useUser();
-  const [posts, setPosts] = useState([]);
+  const { isSignedIn, user } = useUser();
+  const [posts, setPosts] = useState<Post[]>([]);
 
   const fetchPosts = async () => {
     try {
       const response = await fetch('/api/posts');
       if (response.ok) {
-        const data = await response.json();
+        const data: Post[] = await response.json();
         setPosts(data);
       } else {
         console.error('Error fetching posts:', response.statusText);
@@ -26,7 +37,7 @@ const ForumPage: React.FC = () => {
     fetchPosts();
   }, []);
 
-  const handleCreatePost = async (title, content) => {
+  const handleCreatePost = async (title: string, content: string) => {
     if (!isSignedIn || !user) return;
 
     try {
@@ -39,7 +50,7 @@ const ForumPage: React.FC = () => {
       });
 
       if (response.ok) {
-        const newPost = await response.json();
+        const newPost: Post = await response.json();
         setPosts([newPost, ...posts]);
       } else {
         console.error('Error creating post:', response.statusText);
@@ -70,11 +81,15 @@ const ForumPage: React.FC = () => {
   );
 };
 
-const CreatePostForm: React.FC<{ onCreatePost: (title: string, content: string) => void }> = ({ onCreatePost }) => {
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
+interface CreatePostFormProps {
+  onCreatePost: (title: string, content: string) => void;
+}
 
-  const handleSubmit = (e) => {
+const CreatePostForm: React.FC<CreatePostFormProps> = ({ onCreatePost }) => {
+  const [title, setTitle] = useState<string>('');
+  const [content, setContent] = useState<string>('');
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onCreatePost(title, content);
     setTitle('');

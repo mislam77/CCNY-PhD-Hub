@@ -54,40 +54,24 @@ export async function POST(req: Request) {
     });
   }
 
-  const { id, email_addresses, first_name, last_name, username, external_accounts } = evt.data;
   const eventType = evt.type;
 
-  console.log(`Webhook with an ID of ${id} and type of ${eventType}`);
+  console.log(`Webhook with an ID of ${evt.data.id} and type of ${eventType}`);
   console.log('Webhook body:', body);
 
+  // Handle only specific event types
   if (eventType === 'user.updated' || eventType === 'user.created') {
-    let linkedinProfile = null;
+    // Narrow the type of evt.data to access user fields safely
+    const userData = evt.data as {
+      id: string;
+      email_addresses: { email_address: string }[];
+      first_name?: string;
+      last_name?: string;
+      username?: string;
+      external_accounts?: any;
+    };
 
-    // Extract LinkedIn profile information
-    if (external_accounts) {
-      const linkedinAccount = external_accounts.find(account => account.provider === 'oauth_linkedin_oidc');
-      if (linkedinAccount) {
-        const accessToken = process.env.LINKEDIN_ACCESS_TOKEN;
-
-        // Fetch LinkedIn user data
-        try {
-          const response = await fetch('https://api.linkedin.com/v2/me', {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-              'Content-Type': 'application/json',
-            },
-          });
-
-          if (response.ok) {
-            linkedinProfile = await response.json();
-          } else {
-            console.error('Error fetching LinkedIn profile:', response.statusText);
-          }
-        } catch (error) {
-          console.error('Error fetching LinkedIn profile:', error);
-        }
-      }
-    }
+    const { id, email_addresses, first_name, last_name, username, external_accounts } = userData;
 
     const query = `
       INSERT INTO users (id, email, first_name, last_name, username, external_accounts)
@@ -118,7 +102,7 @@ export async function POST(req: Request) {
     }
   } else if (eventType === 'user.deleted') {
     const query = 'DELETE FROM users WHERE id = $1';
-    const values = [id];
+    const values = [evt.data.id];
 
     try {
       await client.query(query, values);

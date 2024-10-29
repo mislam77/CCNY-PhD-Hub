@@ -16,6 +16,37 @@ import {
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 
+interface Profile {
+    first_name: string;
+    last_name: string;
+    username: string;
+    email: string;
+    contact_info: {
+        phone: string;
+        location: string;
+    };
+    bio: string;
+    experiences: {
+        company_name: string;
+        location: string;
+        experience_type: string;
+        start_date: string;
+        end_date: string;
+        description: string;
+    }[];
+    portfolio: {
+        github: string;
+        linkedin: string;
+        site: string;
+    };
+    education: {
+        college_name: string;
+        major: string;
+        start_date: string;
+        end_date: string;
+    }[];
+}
+
 const ProfilePage: React.FC = () => {
     const { user } = useUser();
     const [profile, setProfile] = useState<Profile | null>(null);
@@ -96,7 +127,7 @@ const ProfilePage: React.FC = () => {
         fetchProfile();
     }, [ user ]);
 
-    const handleEditClick = (section) => {
+    const handleEditClick = (section: string) => {
         setEditSection(section);
     };
 
@@ -104,7 +135,7 @@ const ProfilePage: React.FC = () => {
         const { name, value } = e.target;
         const keys = name.split('.');
         if (keys.length > 1) {
-            setFormData((prevData) => {
+            setFormData((prevData: any) => {
                 const updatedData = { ...prevData };
                 let current = updatedData;
                 for (let i = 0; i < keys.length - 1; i++) {
