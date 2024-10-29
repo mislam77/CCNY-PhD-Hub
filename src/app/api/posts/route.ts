@@ -12,7 +12,7 @@ const client = new Client({
   },
 });
 
-client.connect().catch(err => console.error('Error connecting to the database:', err));
+client.connect().catch((err) => console.error('Error connecting to the database:', err));
 
 export async function POST(req: NextRequest) {
   const { title, content, authorId } = await req.json();
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
   let contentJson;
   try {
     contentJson = JSON.stringify(content);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Invalid JSON content' }, { status: 400 });
   }
 
@@ -38,13 +38,13 @@ export async function POST(req: NextRequest) {
   try {
     const result = await client.query(query, values);
     return NextResponse.json(result.rows[0], { status: 201 });
-  } catch (error) {
-    console.error('Error creating post:', error);
+  } catch (dbError) {
+    console.error('Error creating post:', dbError);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const query = `
     SELECT posts.*, users.username AS author_username
     FROM posts
@@ -55,8 +55,8 @@ export async function GET(req: NextRequest) {
   try {
     const result = await client.query(query);
     return NextResponse.json(result.rows, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching posts:', error);
+  } catch (dbError) {
+    console.error('Error fetching posts:', dbError);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

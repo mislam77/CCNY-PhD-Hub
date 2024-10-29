@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { FaGithub, FaLinkedin, FaEdit } from 'react-icons/fa';
 import { FaEnvelope, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
@@ -15,6 +15,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
+import Image from 'next/image';
 
 interface Profile {
     first_name: string;
@@ -51,26 +52,31 @@ const ProfilePage: React.FC = () => {
     const { user } = useUser();
     const [profile, setProfile] = useState<Profile | null>(null);
     const [editSection, setEditSection] = useState<string | null>(null);
-    const [formData, setFormData] = useState<any>({});
-    const [newExperience, setNewExperience] = useState<any>({});
+    const [formData, setFormData] = useState<Partial<Profile>>({});
+    const [newExperience, setNewExperience] = useState<Partial<Profile["experiences"][number]>>({});
 
-    const fetchProfile = async () => {
+
+    const fetchProfile = useCallback(async () => {
         if (user) {
-            try {
-                const response = await fetch(`/api/getprofile?userId=${user.id}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    setProfile(data);
-                    setFormData(data); // Initialize form data with profile data
-                } else {
-                    const errorText = await response.text();
-                    console.error('Error fetching profile:', response.status, response.statusText, errorText);
-                }
-            } catch (error) {
-                console.error('Error fetching profile:', error);
+          try {
+            const response = await fetch(`/api/getprofile?userId=${user.id}`);
+            if (response.ok) {
+              const data = await response.json();
+              setProfile(data);
+              setFormData(data);
+            } else {
+              const errorText = await response.text();
+              console.error('Error fetching profile:', response.status, response.statusText, errorText);
             }
+          } catch (error) {
+            console.error('Error fetching profile:', error);
+          }
         }
-    };
+      }, [user]);
+      
+    useEffect(() => {
+        fetchProfile();
+      }, [fetchProfile]);
 
     const updateProfile = async () => {
         if (user) {
@@ -123,28 +129,26 @@ const ProfilePage: React.FC = () => {
         }
     };
 
-    useEffect(() => {
-        fetchProfile();
-    }, [ user ]);
-
     const handleEditClick = (section: string) => {
         setEditSection(section);
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        const keys = name.split('.');
+        const keys: string[] = name.split('.');
+        
         if (keys.length > 1) {
-            setFormData((prevData: any) => {
+            setFormData((prevData: Partial<Profile>) => {
                 const updatedData = { ...prevData };
-                let current = updatedData;
+                let current: Partial<Profile> = updatedData; // Change 'any' to 'Partial<Profile>'
+    
                 for (let i = 0; i < keys.length - 1; i++) {
                     if (!current[keys[i]]) {
-                        current[keys[i]] = {};
+                        current[keys[i]] = {}; // Ensure the current property is initialized
                     }
-                    current = current[keys[i]];
+                    current = current[keys[i]] as Partial<Profile>; // Cast to Partial<Profile> for type safety
                 }
-                current[keys[keys.length - 1]] = value;
+                current[keys[keys.length - 1]] = value; // Set the final key's value
                 return updatedData;
             });
         } else {
@@ -168,9 +172,11 @@ const ProfilePage: React.FC = () => {
                     <h2 className="text-2xl font-bold mb-4">Profile</h2>
                     <FaEdit className="absolute top-4 right-4 text-gray-500 cursor-pointer" onClick={() => handleEditClick('profile')} />
                     <div className="flex items-center mb-4">
-                        <img
+                        <Image
                             src={user?.imageUrl || 'https://via.placeholder.com/100'}
                             alt="Profile Icon"
+                            width={100}
+                            height={100}
                             className="w-24 h-24 rounded-full mr-4"
                         />
                         <div>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useParams } from 'next/navigation';
 
@@ -24,7 +24,7 @@ const PostPage: React.FC = () => {
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
 
-  const fetchPost = async () => {
+  const fetchPost = useCallback(async () => {
     try {
       const response = await fetch(`/api/posts/${postId}`);
       if (response.ok) {
@@ -36,9 +36,9 @@ const PostPage: React.FC = () => {
     } catch (error) {
       console.error('Error fetching post:', error);
     }
-  };
+  }, [postId]); // Add postId as a dependency
 
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     try {
       const response = await fetch(`/api/comments?postId=${postId}`);
       if (response.ok) {
@@ -50,7 +50,14 @@ const PostPage: React.FC = () => {
     } catch (error) {
       console.error('Error fetching comments:', error);
     }
-  };
+  }, [postId]);
+
+  useEffect(() => {
+    if (postId) {
+      fetchPost();
+      fetchComments();
+    }
+  }, [postId, fetchPost, fetchComments]);
 
   const handleCreateComment = async (text: string, replyToId: string | null = null) => {
     if (!isSignedIn || !user) return;
@@ -74,13 +81,6 @@ const PostPage: React.FC = () => {
       console.error('Error creating comment:', error);
     }
   };
-
-  useEffect(() => {
-    if (postId) {
-      fetchPost();
-      fetchComments();
-    }
-  }, [postId]);
 
   if (!post) {
     return <div>Loading...</div>;

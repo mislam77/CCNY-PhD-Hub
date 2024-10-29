@@ -16,6 +16,12 @@ const client = new Client({
 
 client.connect().catch(err => console.error('Error connecting to the database:', err));
 
+// Define a type for external accounts
+type ExternalAccount = {
+  provider?: string;
+  accountId?: string;
+};
+
 export async function POST(req: Request) {
   const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
 
@@ -68,7 +74,7 @@ export async function POST(req: Request) {
       first_name?: string;
       last_name?: string;
       username?: string;
-      external_accounts?: any;
+      external_accounts?: ExternalAccount[] | null;
     };
 
     const { id, email_addresses, first_name, last_name, username, external_accounts } = userData;
