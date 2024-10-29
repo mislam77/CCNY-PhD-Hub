@@ -1,3 +1,4 @@
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -18,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea"
 import Image from 'next/image';
 
 interface Profile {
+    [key: string]: any;
     first_name: string;
     last_name: string;
     username: string;
