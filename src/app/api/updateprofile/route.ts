@@ -27,14 +27,16 @@ export async function POST(req: NextRequest) {
   const query = `
     UPDATE users
     SET contact_info = $1,
-        experiences = $2,
-        portfolio = $3,
-        education = $4
-    WHERE id = $5
+        bio = $2,
+        experiences = $3,
+        portfolio = $4,
+        education = $5
+    WHERE id = $6
     RETURNING *;
   `;
   const values = [
     data.contact_info ? JSON.stringify(data.contact_info) : null,
+    data.bio || null,
     data.experiences ? JSON.stringify(data.experiences) : null,
     data.portfolio ? JSON.stringify(data.portfolio) : null,
     data.education ? JSON.stringify(data.education) : null,
