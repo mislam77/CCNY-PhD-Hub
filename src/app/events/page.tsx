@@ -172,7 +172,6 @@ const EventsPage: React.FC = () => {
         </div>
       </div>
       <div className="flex justify-center space-x-4 mb-8">
-        <Button className="bg-green-500 text-white px-4 py-2 rounded">Create Community</Button>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button className="bg-blue-500 text-white px-4 py-2 rounded">Create Event</Button>
