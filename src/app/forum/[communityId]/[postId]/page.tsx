@@ -1,13 +1,29 @@
-// pages/post/[id].tsx
-import { useRouter } from 'next/router';
+"use client";
+
 import { useEffect, useState } from 'react';
-import { Button, Input, Textarea } from '@shadcn/ui';
+import { useParams } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+
+interface Post {
+  id: string;
+  title: string;
+  content: string;
+  // Add other properties as needed
+}
+
+interface Comment {
+  id: string;
+  postId: string;
+  content: string;
+  // Add other properties as needed
+}
 
 const PostPage = () => {
-  const router = useRouter();
-  const { id } = router.query;
-  const [post, setPost] = useState(null);
-  const [comments, setComments] = useState([]);
+  const { id } = useParams();
+  const [post, setPost] = useState<Post | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
 
   useEffect(() => {

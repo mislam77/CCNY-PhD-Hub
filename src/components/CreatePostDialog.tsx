@@ -1,4 +1,3 @@
-// components/CreatePostDialog.tsx
 import { useState, ChangeEvent } from 'react';
 import {
   Dialog,
@@ -12,12 +11,25 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { uploadToS3 } from '@/lib/aws';
 
-interface CreatePostDialogProps {
-  communityId: number;
+interface Post {
+  id: string;
+  title: string;
+  content: string;
+  media_url?: string;
+  created_at: string;
+  updated_at: string;
+  author_id: string;
+  community_id: string;
 }
 
-const CreatePostDialog: React.FC<CreatePostDialogProps> = ({ communityId }) => {
+interface CreatePostDialogProps {
+  communityId: string;
+  onCreatePost: (newPost: Post) => void;
+}
+
+const CreatePostDialog: React.FC<CreatePostDialogProps> = ({ communityId, onCreatePost }) => {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -30,30 +42,34 @@ const CreatePostDialog: React.FC<CreatePostDialogProps> = ({ communityId }) => {
   };
 
   const handleSubmit = async () => {
+    let mediaUrl = '';
+    if (media) {
+      mediaUrl = await uploadToS3(media);
+    }
+
     const postData = {
       communityId,
       title,
       content,
-      mediaUrl: media ? media.name : null, // Handle media if present
+      mediaUrl,
     };
-  
-    console.log('Post Data:', postData); // Debug log
-  
+
     const response = await fetch('/api/posts', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(postData), // Convert postData to JSON
+      body: JSON.stringify(postData),
     });
-  
+
     if (response.ok) {
-      await response.json();
-      setOpen(false); // Close the dialog on success
+      const newPost = await response.json();
+      onCreatePost(newPost);
+      setOpen(false);
     } else {
       console.error('Error creating post:', response.statusText);
     }
-  };    
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -78,7 +94,7 @@ const CreatePostDialog: React.FC<CreatePostDialogProps> = ({ communityId }) => {
           />
           <Input
             type="file"
-            accept="image/*"
+            accept="image/*,video/*"
             onChange={handleMediaChange}
           />
         </div>

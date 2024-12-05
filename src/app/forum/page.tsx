@@ -12,6 +12,7 @@ interface Community {
   description: string;
   hashtags: string[];
   created_at: string;
+  banner_photo_url: string;
 }
 
 const ForumPage: React.FC = () => {
@@ -37,31 +38,30 @@ const ForumPage: React.FC = () => {
     fetchCommunities();
   }, []);
 
-  const handleCreateCommunity = (newCommunity: Community) => {
-    setCommunities((prev) => [newCommunity, ...prev]);
-    setIsDialogOpen(false);
-  };
-
   return (
     <div className="container mx-auto">
       <div className="relative h-64 bg-cover bg-center mb-8" style={{ backgroundImage: 'url(https://i.imgur.com/nqgZREZ.jpeg)' }}>
-        <div className="absolute inset-0 bg-black opacity-50"></div>
+        <div className="absolute inset-0 bg-black opacity-35"></div>
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-white">
           <h1 className="text-4xl font-bold">Community Board</h1>
           <p className="text-lg mt-2">A place for CCNY PhD students to connect and share.</p>
         </div>
       </div>
       <div className="flex justify-center space-x-4 mb-8">
-          <CreateCommunityDialog onCreateCommunity={handleCreateCommunity} />
+        <CreateCommunityDialog onCommunityCreated={fetchCommunities} />
       </div>
-      <div className="space-y-4 mx-40">
+      <div className="flex flex-wrap justify-center gap-4 mx-4">
         {communities.map((community) => (
           <div
             key={community.id}
-            className="bg-white shadow-md rounded-lg p-4 relative cursor-pointer"
+            className="bg-white shadow-md rounded-lg p-4 relative cursor-pointer w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5"
             onClick={() => router.push(`/forum/${community.id}`)}
           >
-            <h2 className="text-xl font-bold">{community.name}</h2>
+            <div className="relative h-48 bg-cover bg-center mb-4" style={{ backgroundImage: `url(${community.banner_photo_url})` }}>
+              <div className="absolute inset-0 bg-black opacity-35 flex items-center justify-center">
+                <h2 className="text-2xl font-bold text-white">{community.name}</h2>
+              </div>
+            </div>
             <p className="text-gray-700">{community.description}</p>
             <div className="flex items-center mt-4 space-x-2">
               {community.hashtags.map((tag) => (

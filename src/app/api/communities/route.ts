@@ -35,15 +35,14 @@ export async function POST(req: NextRequest) {
   let body;
   try {
     body = await req.json();
-    console.log('Received body:', body); // Debug log
   } catch (error) {
     console.error('Error parsing JSON:', error);
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const { name, description, hashtags } = body;
+  const { name, description, hashtags, banner_photo_url } = body;
 
-  if (!name || !description || !Array.isArray(hashtags)) {
+  if (!name || !description || !Array.isArray(hashtags) || !banner_photo_url) {
     return NextResponse.json({ error: 'Missing or invalid fields' }, { status: 400 });
   }
 
@@ -51,8 +50,8 @@ export async function POST(req: NextRequest) {
   await client.connect();
   try {
     const result = await client.query(
-      'INSERT INTO communities (name, description, hashtags) VALUES ($1, $2, $3) RETURNING *',
-      [name, description, hashtags]
+      'INSERT INTO communities (name, description, hashtags, banner_photo_url) VALUES ($1, $2, $3, $4) RETURNING *',
+      [name, description, hashtags, banner_photo_url]
     );
     return NextResponse.json(result.rows[0], { status: 201 });
   } catch (error) {
