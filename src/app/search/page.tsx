@@ -1,10 +1,10 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
 
-const SearchPage: React.FC = () => {
+const SearchResults: React.FC = () => {
     const searchParams = useSearchParams();
     const keywords = searchParams.get('keywords');
     const [results, setResults] = useState({ users: [], communities: [], posts: [] });
@@ -104,6 +104,14 @@ const SearchPage: React.FC = () => {
                 )}
             </div>
         </div>
+    );
+};
+
+const SearchPage: React.FC = () => {
+    return (
+        <Suspense fallback={<div>Loading search results...</div>}>
+            <SearchResults />
+        </Suspense>
     );
 };
 
