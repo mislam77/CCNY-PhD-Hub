@@ -1,83 +1,111 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-
-interface Post {
-  id: string;
-  title: string;
-  content: string;
-  // Add other properties as needed
-}
+import React, { useEffect, useState } from 'react';
+import { useUser } from '@clerk/nextjs';
+import { BiComment } from 'react-icons/bi';
 
 interface Comment {
   id: string;
-  postId: string;
+  author_id: string;
+  post_id: string;
   content: string;
-  // Add other properties as needed
+  created_at: string;
+  author_username: string;
+  author_profile_image_url: string;
 }
 
-const PostPage = () => {
-  const { id } = useParams();
-  const [post, setPost] = useState<Post | null>(null);
+const PostPage = ({ postId }: { postId: string }) => {
+  const { user } = useUser();
   const [comments, setComments] = useState<Comment[]>([]);
-  const [newComment, setNewComment] = useState('');
+  const [commentContent, setCommentContent] = useState<string>('');
+  const [showComments, setShowComments] = useState<boolean>(false);
 
-  useEffect(() => {
-    if (id) {
-      // Fetch post details
-      fetch(`/api/posts/${id}`)
-        .then((res) => res.json())
-        .then((data) => setPost(data));
-
-      // Fetch comments for this post
-      fetch(`/api/comments?postId=${id}`)
-        .then((res) => res.json())
-        .then((data) => setComments(data));
-    }
-  }, [id]);
-
-  const handleCommentSubmit = async () => {
-    const response = await fetch('/api/comments', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ postId: id, content: newComment }),
-    });
-
+  const fetchComments = async () => {
+    const response = await fetch(`/api/comments?postId=${postId}`);
     if (response.ok) {
-      setNewComment('');
-      // Refresh comments
-      const updatedComments = await response.json();
-      setComments(updatedComments);
+      setComments(await response.json());
     }
   };
 
+  const handleAddComment = async () => {
+    if (!commentContent.trim()) return;
+
+    const response = await fetch('/api/comments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        postId,
+        content: commentContent,
+      }),
+    });
+
+    if (response.ok) {
+      const newComment = await response.json();
+      setComments((prev) => [newComment, ...prev]);
+      setCommentContent('');
+    } else {
+      console.error('Error adding comment');
+    }
+  };
+
+  useEffect(() => {
+    if (showComments) {
+      fetchComments();
+    }
+  }, [showComments]);
+
   return (
-    <div className="container mx-auto p-4">
-      {post && (
-        <>
-          <h1 className="text-2xl font-bold">{post.title}</h1>
-          <p>{post.content}</p>
-          <div className="comments mt-4">
-            <h2 className="text-xl">Comments</h2>
-            <div>
-              {comments.map((comment) => (
-                <div key={comment.id} className="comment">
+    <div>
+      <button onClick={() => setShowComments(!showComments)}>
+        <BiComment className="text-lg" /> Comment
+      </button>
+
+      {showComments && (
+        <div className="mt-4">
+          {/* Comment input */}
+          <div className="flex items-center mb-4">
+            <img
+              src={user?.profileImageUrl || '/placeholder.jpg'}
+              alt="User profile"
+              className="w-10 h-10 rounded-full mr-2"
+            />
+            <input
+              type="text"
+              value={commentContent}
+              onChange={(e) => setCommentContent(e.target.value)}
+              placeholder="Add a comment..."
+              className="flex-1 border rounded-lg px-4 py-2"
+            />
+            <button
+              onClick={handleAddComment}
+              className="ml-2 bg-blue-500 text-white px-4 py-2 rounded-lg"
+            >
+              Post
+            </button>
+          </div>
+
+          {/* Comments list */}
+          <div className="space-y-4">
+            {comments.map((comment) => (
+              <div key={comment.id} className="flex items-start space-x-4">
+                <img
+                  src={comment.author_profile_image_url}
+                  alt="Author profile"
+                  className="w-10 h-10 rounded-full"
+                />
+                <div>
+                  <p className="font-bold">{comment.author_username}</p>
+                  <p className="text-sm text-gray-500">
+                    {new Date(comment.created_at).toLocaleString()}
+                  </p>
                   <p>{comment.content}</p>
                 </div>
-              ))}
-            </div>
-            <Textarea
-              placeholder="Write a comment"
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-            />
-            <Button onClick={handleCommentSubmit}>Add Comment</Button>
+              </div>
+            ))}
           </div>
-        </>
+        </div>
       )}
     </div>
   );

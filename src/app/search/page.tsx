@@ -27,10 +27,12 @@ const SearchPage: React.FC = () => {
                 <h2 className="text-xl font-semibold">Users</h2>
                 {results.users.length > 0 ? (
                     results.users.map((user: any) => (
-                        <div key={user.id} className="p-2 border-b flex items-center">
-                            <img src={user.profile_image_url} alt={user.username} className="w-10 h-10 rounded-full mr-4" />
-                            <span>{user.username}</span>
-                        </div>
+                        <Link key={user.id} href={`/profile/${user.id}`}>
+                            <div className="p-2 border-b flex items-center cursor-pointer">
+                                <img src={user.profile_image_url} alt={user.username} className="w-10 h-10 rounded-full mr-4" />
+                                <span>{user.username}</span>
+                            </div>
+                        </Link>
                     ))
                 ) : (
                     <p>No users found.</p>

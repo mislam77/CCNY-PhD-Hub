@@ -36,6 +36,7 @@ const CreateEventForm: React.FC<{ onCreateEvent: (event: Event) => void }> = ({ 
   const [end, setEnd] = useState('');
   const [description, setDescription] = useState('');
   const [link, setLink] = useState('');
+  const { user } = useUser();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -174,7 +175,7 @@ const EventsPage: React.FC = () => {
       <div className="flex justify-center space-x-4 mb-8">
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-blue-500 text-white px-4 py-2 rounded">Create Event</Button>
+            {user && <Button className="bg-blue-500 text-white px-4 py-2 rounded">Create Event</Button>}
           </DialogTrigger>
           <DialogContent>
             {selectedEvent ? (

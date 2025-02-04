@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import CreateCommunityDialog from '@/components/CreateCommunityDialog';
+import { useUser } from '@clerk/nextjs';
 
 interface Community {
   id: string;
@@ -19,6 +20,7 @@ const ForumPage: React.FC = () => {
   const [communities, setCommunities] = useState<Community[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const router = useRouter();
+  const { user } = useUser();
 
   const fetchCommunities = async () => {
     try {
@@ -48,7 +50,7 @@ const ForumPage: React.FC = () => {
         </div>
       </div>
       <div className="flex justify-center space-x-4 mb-8">
-        <CreateCommunityDialog onCommunityCreated={fetchCommunities} />
+        {user && <CreateCommunityDialog onCommunityCreated={fetchCommunities} />}
       </div>
       <div className="flex flex-wrap justify-center gap-4 mx-4">
         {communities.map((community) => (
