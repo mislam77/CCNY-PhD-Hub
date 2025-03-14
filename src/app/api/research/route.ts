@@ -15,11 +15,9 @@ const createClient = () => new Client({
   ssl: { rejectUnauthorized: false },
 });
 
-export const config = {
-  api: {
-    bodyParser: true, // Enable default body parser to handle file uploads
-  },
-};
+// Instead of using the deprecated config export, use the route segment config approach
+export const dynamic = 'force-dynamic';
+export const maxDuration = 60; // Set an appropriate duration for file processing
 
 // Handle file upload and PDF parsing
 export async function POST(req: NextRequest) {
