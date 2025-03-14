@@ -17,11 +17,8 @@ const createClient = () => new Client({
   ssl: { rejectUnauthorized: false },
 });
 
-export const config = {
-    api: {
-      bodyParser: false,
-    },
-};
+export const dynamic = 'force-dynamic';
+export const maxDuration = 60; // Set an appropriate duration for file processing
 
 // Setup Multer to store uploaded files temporarily in memory
 const storage = multer.memoryStorage(); // Use memory storage to avoid local disk storage

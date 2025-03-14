@@ -15,6 +15,9 @@ const createClient = () => new Client({
   ssl: { rejectUnauthorized: false },
 });
 
+export const dynamic = 'force-dynamic';
+export const maxDuration = 60; // Set an appropriate duration for file processing
+
 // Handle file upload and PDF parsing
 export async function POST(req: NextRequest) {
   console.log('Received POST request at /api/research/upload');
