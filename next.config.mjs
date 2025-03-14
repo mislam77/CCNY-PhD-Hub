@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['i.imgur.com', 'img.clerk.com', 'via.placeholder.com'],
+    domains: ['i.imgur.com', 'img.clerk.com', 'via.placeholder.com', 'ccny-phd-hub.s3.us-east-2.amazonaws.com'],
   },
   eslint: {
     ignoreDuringBuilds: true,
@@ -18,6 +18,9 @@ const nextConfig = {
     AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
     AWS_REGION: process.env.AWS_REGION,
     AWS_S3_BUCKET_NAME: process.env.AWS_S3_BUCKET_NAME,
+  },
+  experimental: {
+    serverComponentsExternalPackages: ['pdf-parse'],
   },
 };
 
