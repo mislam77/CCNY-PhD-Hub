@@ -30,8 +30,8 @@ export async function GET(req: NextRequest) {
       // Fetch user images for admins
       const groupsWithAdminImages = await Promise.all(
         result.rows.map(async (group) => {
-          const adminImages = await Promise.all(
-            group.admins.map(async (adminId) => {
+          const adminImages: string[] = await Promise.all(
+            group.admins.map(async (adminId: string) => {
               const user = await clerkClient.users.getUser(adminId);
               return user.imageUrl;
             })
