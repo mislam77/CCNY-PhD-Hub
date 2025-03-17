@@ -6,9 +6,15 @@ import ResearchGroupCard from "@/components/ResearchGroupCard";
 import FilterComponent from "@/components/FilterComponent";
 import CreateResearchGroupModal from "@/components/CreateResearchGroupModal";
 
+// Define the ResearchGroup interface
+interface ResearchGroup {
+  id: string | number;
+  // Add other properties that your ResearchGroupCard component expects
+}
+
 export default function ResearchPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [researchGroups, setResearchGroups] = useState([]);
+  const [researchGroups, setResearchGroups] = useState<ResearchGroup[]>([]);
 
   // Fetch research groups from API
   useEffect(() => {
@@ -26,8 +32,8 @@ export default function ResearchPage() {
   }, []);
 
   // Function to update groups when a new group is added
-  const handleGroupCreated = (newGroup) => {
-    setResearchGroups((prevGroups) => [newGroup, ...prevGroups]);
+  const handleGroupCreated = (newGroup: ResearchGroup): void => {
+    setResearchGroups((prevGroups: ResearchGroup[]) => [newGroup, ...prevGroups]);
   };
 
   return (
