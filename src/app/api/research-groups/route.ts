@@ -20,12 +20,29 @@ const createClient = () => {
 export async function GET(req: NextRequest) {
     const client = createClient();
     await client.connect();
+    
+    // Get the keyword from query parameters
+    const url = new URL(req.url);
+    const keyword = url.searchParams.get('keyword');
+    
     try {
-      const result = await client.query(
-        `SELECT id, title, description, image_url, admins, members, group_status, created_at, last_active 
-         FROM research_groups 
-         ORDER BY last_active DESC`
-      );
+      let queryText = `
+        SELECT id, title, description, image_url, admins, members, group_status, created_at, last_active 
+        FROM research_groups
+      `;
+      
+      const queryParams: any[] = [];
+      
+      // Add title filter if keyword is provided
+      if (keyword && keyword.trim() !== '') {
+        queryText += ` WHERE title ILIKE $1`;
+        queryParams.push(`%${keyword}%`); // Use ILIKE for case-insensitive search with wildcard
+      }
+      
+      // Add ordering
+      queryText += ` ORDER BY last_active DESC`;
+      
+      const result = await client.query(queryText, queryParams);
   
       // Fetch user images for admins
       const groupsWithAdminImages = await Promise.all(
