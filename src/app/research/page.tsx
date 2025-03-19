@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
+import { useRouter } from 'next/navigation';
 import ResearchGroupCard from "@/components/ResearchGroupCard";
 import FilterComponent from "@/components/FilterComponent";
 import CreateResearchGroupModal from "@/components/CreateResearchGroupModal";
@@ -9,12 +10,13 @@ import CreateResearchGroupModal from "@/components/CreateResearchGroupModal";
 export default function ResearchPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [researchGroups, setResearchGroups] = useState([]);
+  const router = useRouter();
 
   // Fetch research groups from API
   useEffect(() => {
     const fetchResearchGroups = async () => {
       try {
-        const response = await fetch("/api/research-groups");
+        const response = await fetch("/api/research");
         const data = await response.json();
         setResearchGroups(data);
       } catch (error) {
@@ -28,6 +30,7 @@ export default function ResearchPage() {
   // Function to update groups when a new group is added
   const handleGroupCreated = (newGroup) => {
     setResearchGroups((prevGroups) => [newGroup, ...prevGroups]);
+    router.push(`/research/${newGroup.id}`);
   };
 
   return (

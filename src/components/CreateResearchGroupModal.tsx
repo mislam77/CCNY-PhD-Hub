@@ -33,7 +33,7 @@ export default function CreateResearchGroupModal({ onClose, onGroupCreated }) {
         image_url = await uploadToS3(groupPhoto);
       }
   
-      const response = await fetch("/api/research-groups", {
+      const response = await fetch("/api/research", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title, description, group_status, image_url }),
