@@ -27,7 +27,7 @@ export default function ResearchPage() {
           queryParams.append('keyword', filters.keyword);
         }
         
-        const url = `/api/research-groups${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+        const url = `/api/research${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
         const response = await fetch(url);
         const data = await response.json();
         setResearchGroups(data);
