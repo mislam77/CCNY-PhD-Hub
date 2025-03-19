@@ -31,7 +31,7 @@
     "formidable": "^3.5.2",
     "lucide-react": "^0.453.0",
     "multer": "^1.4.5-lts.1",
-    "next": "14.2.14",
+    "next": "^14.2.24",
     "pdf-parse": "^1.1.1",
     "pg": "^8.13.0",
     "react": "^18",

@@ -1,11 +1,27 @@
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
-export default function FilterComponent() {
+interface FilterComponentProps {
+  onFilterApply: (filters: { keyword: string }) => void;
+}
+
+export default function FilterComponent({ onFilterApply }: FilterComponentProps) {
+  const [keyword, setKeyword] = useState("");
+
+  const handleFilter = () => {
+    onFilterApply({ keyword });
+  };
+
   return (
     <div className="flex gap-4 mb-6">
-      <Input placeholder="Enter keyword" className="w-full" />
+      <Input 
+        placeholder="Enter keyword" 
+        className="w-full" 
+        value={keyword}
+        onChange={(e) => setKeyword(e.target.value)}
+      />
       <Select>
         <SelectTrigger className="w-40">
           <SelectValue placeholder="Concentration" />
@@ -24,7 +40,7 @@ export default function FilterComponent() {
           <SelectItem value="collaboration">Collaboration</SelectItem>
         </SelectContent>
       </Select>
-      <Button>Filter</Button>
+      <Button onClick={handleFilter}>Filter</Button>
     </div>
   );
 }
