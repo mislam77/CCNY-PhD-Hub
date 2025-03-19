@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
+import { useRouter } from 'next/navigation';
 import ResearchGroupCard from "@/components/ResearchGroupCard";
 import FilterComponent from "@/components/FilterComponent";
 import CreateResearchGroupModal from "@/components/CreateResearchGroupModal";
@@ -16,6 +17,7 @@ export default function ResearchPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [researchGroups, setResearchGroups] = useState<ResearchGroup[]>([]);
   const [filters, setFilters] = useState<{ keyword: string }>({ keyword: "" });
+  const router = useRouter();
 
   // Fetch research groups from API
   useEffect(() => {
@@ -42,6 +44,7 @@ export default function ResearchPage() {
   // Function to update groups when a new group is added
   const handleGroupCreated = (newGroup: ResearchGroup): void => {
     setResearchGroups((prevGroups: ResearchGroup[]) => [newGroup, ...prevGroups]);
+    router.push(`/research/${newGroup.id}`);
   };
 
   // Handle filter changes
