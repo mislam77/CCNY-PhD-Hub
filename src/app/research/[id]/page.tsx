@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUser } from "@clerk/nextjs";
 import { format, formatDistanceToNow } from "date-fns";
+import CreateDiscussionDialog from "@/components/CreateDiscussionDialog";
 
 export default function ResearchGroupPage() {
   const { id } = useParams();
@@ -20,6 +21,7 @@ export default function ResearchGroupPage() {
   const [error, setError] = useState(null);
   const [membershipStatus, setMembershipStatus] = useState("loading"); // "member", "nonmember", "admin", "loading"
   const [membershipLoading, setMembershipLoading] = useState(false);
+  const [isDiscussionDialogOpen, setIsDiscussionDialogOpen] = useState(false);
 
   // Fetch group details
   useEffect(() => {
@@ -157,6 +159,30 @@ export default function ResearchGroupPage() {
     }
   };
 
+  // Handle discussion creation
+  const handleCreateDiscussion = async (title, content) => {
+    try {
+      const response = await fetch(`/api/research/${id}/discussions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, content }),
+      });
+      
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to create discussion");
+      }
+      
+      // Here you could add code to refresh discussions
+      // For now, just close the dialog
+      setIsDiscussionDialogOpen(false);
+      
+    } catch (err) {
+      console.error("Error creating discussion:", err);
+      alert(err.message);
+    }
+  };
+
   // Render activity item
   const renderActivityItem = (activity) => {
     const { activityType, user, createdAt } = activity;
@@ -257,8 +283,13 @@ export default function ResearchGroupPage() {
               </TabsList>
               <TabsContent value="discussions" className="p-4">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-semibold">Discussions</h2>
-                  <Button size="sm">New Discussion</Button>
+                  <h2 className="text-xl font-semibold">New Discussion</h2>
+                  <CreateDiscussionDialog 
+                    open={isDiscussionDialogOpen}
+                    onOpenChange={setIsDiscussionDialogOpen}
+                    onSubmit={handleCreateDiscussion}
+                    groupId={id}
+                  />
                 </div>
                 <div className="bg-gray-100 p-6 rounded-lg text-center">
                   <p>No discussions yet. Start a new one!</p>
