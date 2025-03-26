@@ -19,7 +19,7 @@ export default function CallToAction() {
             Connect with fellow PhD students, access resources, and make the most of your doctoral journey at CCNY.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/register" className="bg-white text-primary hover:bg-gray-100 font-bold py-3 px-8 rounded-lg transition-colors duration-300">
+            <Link href="/signup" className="bg-white text-primary hover:bg-gray-100 font-bold py-3 px-8 rounded-lg transition-colors duration-300">
               Sign Up Today
             </Link>
             <Link href="/contact" className="bg-transparent hover:bg-primary-dark text-white border-2 border-white font-bold py-3 px-8 rounded-lg transition-colors duration-300">

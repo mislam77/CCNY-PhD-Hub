@@ -69,7 +69,7 @@ export default function HeroSection() {
             Join the CCNY PhD Hub — where doctoral students connect, share resources, and build a thriving academic community.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/register" className="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-8 rounded-lg transition-colors duration-300 flex items-center justify-center">
+            <Link href="/signup" className="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-8 rounded-lg transition-colors duration-300 flex items-center justify-center">
               Join the Community <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
             <Link href="/about" className="bg-white hover:bg-gray-100 text-primary font-bold py-3 px-8 rounded-lg transition-colors duration-300">
