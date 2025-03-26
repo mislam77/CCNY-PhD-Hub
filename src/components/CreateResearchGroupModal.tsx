@@ -13,7 +13,12 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { uploadToS3 } from "@/lib/aws";
 
-export default function CreateResearchGroupModal({ onClose, onGroupCreated }) {
+interface CreateResearchGroupModalProps {
+  onClose: () => void;
+  onGroupCreated: (group: any) => void;
+}
+
+export default function CreateResearchGroupModal({ onClose, onGroupCreated }: CreateResearchGroupModalProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [group_status, setGroup_Status] = useState("public");
@@ -54,7 +59,7 @@ export default function CreateResearchGroupModal({ onClose, onGroupCreated }) {
   };
   
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setGroupPhoto(file);

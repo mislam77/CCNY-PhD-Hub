@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['i.imgur.com', 'img.clerk.com', 'via.placeholder.com', 'ccny-phd-hub.s3.us-east-2.amazonaws.com'],
+    domains: ['i.imgur.com', 'img.clerk.com', 'via.placeholder.com', 'randomuser.me', 'images.unsplash.com', 'ccny-phd-hub.s3.us-east-2.amazonaws.com'],
   },
   eslint: {
     ignoreDuringBuilds: true,
