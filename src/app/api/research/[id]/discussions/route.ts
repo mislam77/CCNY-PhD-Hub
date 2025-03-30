@@ -15,6 +15,40 @@ const createClient = () => {
   });
 };
 
+
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const id = params.id;
+  const client = createClient();
+  const { userId } = getAuth(req)
+
+  if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  
+  try {
+    await client.connect();
+    
+    // Get discussions for this group
+    const result = await client.query(
+      `SELECT * FROM research_group_discussions
+      WHERE research_group_discussions.group_id = $1
+      ORDER BY created_at DESC`,
+      [id]
+    );
+    
+    console.log(result)
+    return NextResponse.json(result, { status: 200 });
+    
+  } catch (error) {
+    console.error("Error fetching discussions:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+
 export async function POST(
     req: NextRequest,
     { params }: { params: { id: string } }
