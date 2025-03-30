@@ -165,7 +165,7 @@ export default function ResearchGroupPage() {
       const response = await fetch(`/api/research/${id}/discussions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, content }),
+        body: JSON.stringify({ title, content, id}),
       });
       
       if (!response.ok) {
