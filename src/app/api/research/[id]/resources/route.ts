@@ -105,6 +105,14 @@ export async function POST(
     );
     
     const newResource = result.rows[0];
+
+    // Log activity
+    await client.query(
+      `INSERT INTO research_group_activities
+       (group_id, user_id, activity_type, details)
+       VALUES ($1, $2, $3, $4)`,
+      [id, userId, 'create_resource', { resource_id: newResource.id }]
+    )
     
     return NextResponse.json(newResource);
 

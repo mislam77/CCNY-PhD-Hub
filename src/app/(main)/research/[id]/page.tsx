@@ -418,6 +418,15 @@ export default function ResearchGroupPage() {
         actionText = "left the group";
         break;
       // Add more activity types as needed
+      case "create_discussion":
+        actionText = "created a discussion";
+        break;
+      case "add_discussion_comment":
+        actionText = "commented on a discussion";
+        break;
+      case "create_resource":
+        actionText = "uploaded a resource";
+        break;
       default:
         actionText = "performed an action";
     }
