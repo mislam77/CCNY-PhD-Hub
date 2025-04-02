@@ -68,7 +68,7 @@ export async function GET(
         const user = await clerkClient.users.getUser(memberId);
         return {
           id: memberId,
-          name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'You',
+          name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username,
           imageUrl: user.imageUrl
         };
       } catch (error) {
