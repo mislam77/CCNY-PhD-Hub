@@ -34,6 +34,7 @@ export default function ResearchGroupPage() {
   const [commentText, setCommentText] = useState({});
   const [submittingComment, setSubmittingComment] = useState(false);
   const [expandedDiscussionContent, setExpandedDiscussionContent] = useState({});
+  const [downloadingResource, setDownloadingResource] = useState<string | null>(null);
 
   // Fetch group details
   useEffect(() => {
@@ -281,6 +282,34 @@ export default function ResearchGroupPage() {
     else if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
     else if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + " MB";
     else return (bytes / (1024 * 1024 * 1024)).toFixed(1) + " GB";
+  };
+
+  // Add a function to handle resource download
+  const handleResourceDownload = async (resourceId: string, fileKey: string) => {
+    try {
+      setDownloadingResource(resourceId);
+      
+      // Request a presigned URL for downloading
+      const response = await fetch(`/api/research/${id}/resources/download`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileKey }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to generate download link');
+      }
+      
+      const { url } = await response.json();
+      
+      // Open the download link in a new tab
+      window.open(url, '_blank');
+    } catch (error) {
+      console.error('Error downloading resource:', error);
+      alert('Could not download the resource. Please try again later.');
+    } finally {
+      setDownloadingResource(null);
+    }
   };
 
   // Toggle discussion comments visibility
@@ -660,13 +689,10 @@ export default function ResearchGroupPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() =>
-                              window.open(
-                                `http://ccny-phd-hub.s3.amazonaws.com/${resource.fileKey}`,
-                              )
-                            }
+                            disabled={downloadingResource === resource.id}
+                            onClick={() => handleResourceDownload(resource.id, resource.fileKey)}
                           >
-                            Download
+                            {downloadingResource === resource.id ? 'Preparing...' : 'Download'}
                           </Button>
                         </div>
                       </div>
