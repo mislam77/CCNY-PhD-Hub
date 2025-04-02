@@ -33,6 +33,7 @@ export default function ResearchGroupPage() {
   const [discussionComments, setDiscussionComments] = useState({});
   const [commentText, setCommentText] = useState({});
   const [submittingComment, setSubmittingComment] = useState(false);
+  const [expandedDiscussionContent, setExpandedDiscussionContent] = useState({});
 
   // Fetch group details
   useEffect(() => {
@@ -357,6 +358,24 @@ export default function ResearchGroupPage() {
     }
   };
 
+  // Toggle discussion content expansion
+  const toggleDiscussionContent = (discussionId) => {
+    setExpandedDiscussionContent((prev) => ({
+      ...prev,
+      [discussionId]: !prev[discussionId],
+    }));
+  };
+
+  // Helper to check if content is long enough to need truncation
+  const isContentLong = (content) => {
+    return content.length > 300;
+  };
+
+  // Helper to get truncated content
+  const getTruncatedContent = (content) => {
+    return content.length > 300 ? content.substring(0, 300) + "..." : content;
+  };
+
   // Render activity item
   const renderActivityItem = (activity) => {
     const { activityType, user, createdAt } = activity;
@@ -484,10 +503,22 @@ export default function ResearchGroupPage() {
                         <h3 className="text-lg font-medium mb-1">
                           {discussion.title}
                         </h3>
-                        <p className="text-gray-700 text-sm mb-2 line-clamp-2">
-                          {discussion.content}
+                        <p className="text-gray-700 text-sm mb-2">
+                          {expandedDiscussionContent[discussion.id] || !isContentLong(discussion.content)
+                            ? discussion.content
+                            : getTruncatedContent(discussion.content)}
                         </p>
-                        <div className="flex justify-between items-center text-sm text-gray-500 mb-2">
+                        {isContentLong(discussion.content) && (
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="p-0 h-auto text-blue-600 font-medium"
+                            onClick={() => toggleDiscussionContent(discussion.id)}
+                          >
+                            {expandedDiscussionContent[discussion.id] ? "Show less" : "Read more"}
+                          </Button>
+                        )}
+                        <div className="flex justify-between items-center text-sm text-gray-500 mb-2 mt-2">
                           <div>Started by {getUserNameById(discussion.user_id)}</div>
                           <div>
                             {formatDistanceToNow(
