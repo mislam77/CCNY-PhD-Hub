@@ -74,6 +74,15 @@ export async function POST(
         );
 
         const newDiscussion = result.rows[0];
+
+        // Log activity
+        await client.query(
+            `INSERT INTO research_group_activities 
+            (group_id, user_id, activity_type, details) 
+            VALUES ($1, $2, $3, $4)`,
+            [id, userId, 'create_discussion', { discussion_id: newDiscussion.id }]
+        )
+
         return NextResponse.json(newDiscussion, { status: 201 });
 
     } catch (error) {

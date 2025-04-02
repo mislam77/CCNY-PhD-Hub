@@ -33,6 +33,8 @@ export default function ResearchGroupPage() {
   const [discussionComments, setDiscussionComments] = useState({});
   const [commentText, setCommentText] = useState({});
   const [submittingComment, setSubmittingComment] = useState(false);
+  const [expandedDiscussionContent, setExpandedDiscussionContent] = useState({});
+  const [downloadingResource, setDownloadingResource] = useState<string | null>(null);
 
   // Fetch group details
   useEffect(() => {
@@ -282,6 +284,34 @@ export default function ResearchGroupPage() {
     else return (bytes / (1024 * 1024 * 1024)).toFixed(1) + " GB";
   };
 
+  // Add a function to handle resource download
+  const handleResourceDownload = async (resourceId: string, fileKey: string) => {
+    try {
+      setDownloadingResource(resourceId);
+      
+      // Request a presigned URL for downloading
+      const response = await fetch(`/api/research/${id}/resources/download`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileKey }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to generate download link');
+      }
+      
+      const { url } = await response.json();
+      
+      // Open the download link in a new tab
+      window.open(url, '_blank');
+    } catch (error) {
+      console.error('Error downloading resource:', error);
+      alert('Could not download the resource. Please try again later.');
+    } finally {
+      setDownloadingResource(null);
+    }
+  };
+
   // Toggle discussion comments visibility
   const toggleDiscussionComments = async (discussionId) => {
     // If comments are already expanded, just toggle visibility
@@ -357,6 +387,24 @@ export default function ResearchGroupPage() {
     }
   };
 
+  // Toggle discussion content expansion
+  const toggleDiscussionContent = (discussionId) => {
+    setExpandedDiscussionContent((prev) => ({
+      ...prev,
+      [discussionId]: !prev[discussionId],
+    }));
+  };
+
+  // Helper to check if content is long enough to need truncation
+  const isContentLong = (content) => {
+    return content.length > 300;
+  };
+
+  // Helper to get truncated content
+  const getTruncatedContent = (content) => {
+    return content.length > 300 ? content.substring(0, 300) + "..." : content;
+  };
+
   // Render activity item
   const renderActivityItem = (activity) => {
     const { activityType, user, createdAt } = activity;
@@ -370,6 +418,15 @@ export default function ResearchGroupPage() {
         actionText = "left the group";
         break;
       // Add more activity types as needed
+      case "create_discussion":
+        actionText = "created a discussion";
+        break;
+      case "add_discussion_comment":
+        actionText = "commented on a discussion";
+        break;
+      case "create_resource":
+        actionText = "uploaded a resource";
+        break;
       default:
         actionText = "performed an action";
     }
@@ -484,10 +541,22 @@ export default function ResearchGroupPage() {
                         <h3 className="text-lg font-medium mb-1">
                           {discussion.title}
                         </h3>
-                        <p className="text-gray-700 text-sm mb-2 line-clamp-2">
-                          {discussion.content}
+                        <p className="text-gray-700 text-sm mb-2">
+                          {expandedDiscussionContent[discussion.id] || !isContentLong(discussion.content)
+                            ? discussion.content
+                            : getTruncatedContent(discussion.content)}
                         </p>
-                        <div className="flex justify-between items-center text-sm text-gray-500 mb-2">
+                        {isContentLong(discussion.content) && (
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="p-0 h-auto text-blue-600 font-medium"
+                            onClick={() => toggleDiscussionContent(discussion.id)}
+                          >
+                            {expandedDiscussionContent[discussion.id] ? "Show less" : "Read more"}
+                          </Button>
+                        )}
+                        <div className="flex justify-between items-center text-sm text-gray-500 mb-2 mt-2">
                           <div>Started by {getUserNameById(discussion.user_id)}</div>
                           <div>
                             {formatDistanceToNow(
@@ -629,13 +698,10 @@ export default function ResearchGroupPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() =>
-                              window.open(
-                                `http://ccny-phd-hub.s3.amazonaws.com/${resource.fileKey}`,
-                              )
-                            }
+                            disabled={downloadingResource === resource.id}
+                            onClick={() => handleResourceDownload(resource.id, resource.fileKey)}
                           >
-                            Download
+                            {downloadingResource === resource.id ? 'Preparing...' : 'Download'}
                           </Button>
                         </div>
                       </div>

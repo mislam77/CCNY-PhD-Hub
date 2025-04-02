@@ -81,6 +81,14 @@ export async function POST(
 
         const comment = result.rows[0];
 
+        // Log activity
+        await client.query(
+            `INSERT INTO research_group_activities 
+            (group_id, user_id, activity_type, details) 
+            VALUES ($1, $2, $3, $4)`,
+            [group_id, userId, 'add_discussion_comment', { commentId: comment.id }]
+        )
+
         return NextResponse.json({ 
             message: "Comment created successfully", 
             comment 
