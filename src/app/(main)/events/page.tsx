@@ -2,12 +2,25 @@
 
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
-import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
-import { format, parse, startOfWeek, getDay } from 'date-fns';
+import { Calendar, dateFnsLocalizer, Views } from 'react-big-calendar';
+import { format, parse, startOfWeek, getDay, addDays } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Calendar as CalendarIcon, 
+  Clock, 
+  Link as LinkIcon, 
+  MessageSquare, 
+  Users, 
+  PlusCircle,
+  Info
+} from 'lucide-react';
 
 const locales = {
   'en-US': enUS,
@@ -30,16 +43,39 @@ interface Event {
   link: string;
 }
 
-const CreateEventForm: React.FC<{ onCreateEvent: (event: Event) => void }> = ({ onCreateEvent }) => {
+// Custom event component for the calendar
+const EventComponent = ({ event }: { event: Event }) => (
+  <div className="flex items-center h-full w-full overflow-hidden">
+    <div className="w-1 h-full bg-primary mr-2"></div>
+    <div className="truncate">
+      <span className="font-medium">{event.title}</span>
+    </div>
+  </div>
+);
+
+const CreateEventForm: React.FC<{ onCreateEvent: (event: Event) => void, onCancel: () => void }> = ({ onCreateEvent, onCancel }) => {
   const [title, setTitle] = useState('');
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
   const [description, setDescription] = useState('');
   const [link, setLink] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useUser();
+
+  useEffect(() => {
+    // Set default times for today
+    const today = new Date();
+    const startDate = format(today, "yyyy-MM-dd'T'HH:mm");
+    const endDate = format(addDays(today, 1), "yyyy-MM-dd'T'HH:mm");
+    
+    setStart(startDate);
+    setEnd(endDate);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    
     const newEvent: Event = {
       id: Math.random().toString(36).substring(2, 11),
       title,
@@ -48,58 +84,93 @@ const CreateEventForm: React.FC<{ onCreateEvent: (event: Event) => void }> = ({ 
       description,
       link,
     };
+    
     onCreateEvent(newEvent);
+    setIsSubmitting(false);
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-gray-700">Title</label>
-        <input
+        <label className="block text-sm font-medium mb-1">Event Title</label>
+        <Input
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded"
+          placeholder="Add a title for your event"
+          required
+          className="w-full"
         />
       </div>
-      <div>
-        <label className="block text-gray-700">Start Date and Time</label>
-        <input
-          type="datetime-local"
-          value={start}
-          onChange={(e) => setStart(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded"
-        />
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">Start Date & Time</label>
+          <div className="relative">
+            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+              <CalendarIcon className="h-4 w-4" />
+            </div>
+            <Input
+              type="datetime-local"
+              value={start}
+              onChange={(e) => setStart(e.target.value)}
+              className="pl-10"
+              required
+            />
+          </div>
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium mb-1">End Date & Time</label>
+          <div className="relative">
+            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+              <Clock className="h-4 w-4" />
+            </div>
+            <Input
+              type="datetime-local"
+              value={end}
+              onChange={(e) => setEnd(e.target.value)}
+              className="pl-10"
+              required
+            />
+          </div>
+        </div>
       </div>
+      
       <div>
-        <label className="block text-gray-700">End Date and Time</label>
-        <input
-          type="datetime-local"
-          value={end}
-          onChange={(e) => setEnd(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded"
-        />
-      </div>
-      <div>
-        <label className="block text-gray-700">Description</label>
-        <textarea
+        <label className="block text-sm font-medium mb-1">Description</label>
+        <Textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded"
+          placeholder="Provide details about your event"
+          className="min-h-[100px]"
         />
       </div>
+      
       <div>
-        <label className="block text-gray-700">Zoom/Google Meet Link</label>
-        <input
-          type="url"
-          value={link}
-          onChange={(e) => setLink(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded"
-        />
+        <label className="block text-sm font-medium mb-1">Virtual Meeting Link</label>
+        <div className="relative">
+          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+            <LinkIcon className="h-4 w-4" />
+          </div>
+          <Input
+            type="url"
+            value={link}
+            onChange={(e) => setLink(e.target.value)}
+            placeholder="Add a Zoom, Google Meet, or other virtual meeting link"
+            className="pl-10"
+          />
+        </div>
       </div>
-      <Button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
-        Create Event
-      </Button>
+      
+      <DialogFooter className="gap-2 mt-6">
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Creating...' : 'Create Event'}
+        </Button>
+      </DialogFooter>
     </form>
   );
 };
@@ -109,8 +180,13 @@ const EventsPage: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [isCreateMode, setIsCreateMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [view, setView] = useState(Views.MONTH);
+  const [featuredEvents, setFeaturedEvents] = useState<Event[]>([]);
 
   const fetchEvents = async () => {
+    setIsLoading(true);
     try {
       const response = await fetch('/api/events');
       if (response.ok) {
@@ -122,11 +198,21 @@ const EventsPage: React.FC = () => {
           end_time: new Date(event.end_time),
         }));
         setEvents(formattedData);
+        
+        // Set featured events (upcoming 3 events)
+        const now = new Date();
+        const upcoming = formattedData
+          .filter(event => event.start_time > now)
+          .sort((a, b) => a.start_time.getTime() - b.start_time.getTime())
+          .slice(0, 3);
+        setFeaturedEvents(upcoming);
       } else {
         console.error('Error fetching events:', response.statusText);
       }
     } catch (error) {
       console.error('Error fetching events:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -148,8 +234,20 @@ const EventsPage: React.FC = () => {
 
       if (response.ok) {
         const createdEvent: Event = await response.json();
-        setEvents([...events, createdEvent]);
-        setIsDialogOpen(false); // Close the dialog after creating the event
+        // Make sure the dates are Date objects
+        createdEvent.start_time = new Date(createdEvent.start_time);
+        createdEvent.end_time = new Date(createdEvent.end_time);
+        
+        setEvents(prevEvents => [...prevEvents, createdEvent]);
+        closeDialog();
+        
+        // Update featured events
+        const now = new Date();
+        const upcoming = [...events, createdEvent]
+          .filter(event => event.start_time > now)
+          .sort((a, b) => a.start_time.getTime() - b.start_time.getTime())
+          .slice(0, 3);
+        setFeaturedEvents(upcoming);
       } else {
         console.error('Error creating event:', response.statusText);
       }
@@ -160,58 +258,213 @@ const EventsPage: React.FC = () => {
 
   const handleSelectEvent = (event: Event) => {
     setSelectedEvent(event);
+    setIsCreateMode(false);
     setIsDialogOpen(true);
+  };
+  
+  const openCreateDialog = () => {
+    setSelectedEvent(null);
+    setIsCreateMode(true);
+    setIsDialogOpen(true);
+  };
+  
+  const closeDialog = () => {
+    setIsDialogOpen(false);
+    setSelectedEvent(null);
+    setIsCreateMode(false);
+  };
+  
+  const formatDateRange = (start: Date, end: Date) => {
+    const sameDay = start.toDateString() === end.toDateString();
+    
+    if (sameDay) {
+      return `${format(start, 'MMMM d, yyyy')} • ${format(start, 'h:mm a')} - ${format(end, 'h:mm a')}`;
+    } else {
+      return `${format(start, 'MMM d, h:mm a')} - ${format(end, 'MMM d, h:mm a, yyyy')}`;
+    }
   };
 
   return (
-    <div className="container mx-auto">
-      <div className="relative h-64 bg-cover bg-center mb-8" style={{ backgroundImage: 'url(https://i.imgur.com/nqgZREZ.jpeg)' }}>
-        <div className="absolute inset-0 bg-black opacity-50"></div>
-        <div className="relative z-10 flex flex-col items-center justify-center h-full text-white">
-          <h1 className="text-4xl font-bold">Events Calendar</h1>
-          <p className="text-lg mt-2">Stay updated with upcoming events and meetings.</p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero Section */}
+      <div className="relative bg-gradient-to-r from-primary/90 to-purple-700/90 py-16 px-4">
+        <div className="absolute inset-0 bg-black/50">
+          <div 
+            className="absolute inset-0 opacity-30"
+            style={{ 
+              backgroundImage: 'url(https://i.imgur.com/nqgZREZ.jpeg)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              mixBlendMode: 'overlay'
+            }}
+          ></div>
+        </div>
+        <div className="container mx-auto relative z-10">
+          <div className="max-w-3xl">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Events Calendar</h1>
+            <p className="text-xl text-white/90 mb-8">
+              Discover academic seminars, workshops, networking events and more. Never miss an opportunity to learn and connect.
+            </p>
+            {user && (
+              <Button 
+                onClick={openCreateDialog}
+                className="bg-white text-primary hover:bg-white/90 transition-colors"
+                size="lg"
+              >
+                <PlusCircle className="mr-2 h-5 w-5" />
+                Create New Event
+              </Button>
+            )}
+          </div>
         </div>
       </div>
-      <div className="flex justify-center space-x-4 mb-8">
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            {user && <Button className="bg-blue-500 text-white px-4 py-2 rounded">Create Event</Button>}
-          </DialogTrigger>
-          <DialogContent>
-            {selectedEvent ? (
-              <>
-                <DialogTitle>{selectedEvent.title}</DialogTitle>
-                <DialogDescription>
-                  <p><strong>Description:</strong> {selectedEvent.description}</p>
-                  <p><strong>Start:</strong> {selectedEvent.start_time.toLocaleString()}</p>
-                  <p><strong>End:</strong> {selectedEvent.end_time.toLocaleString()}</p>
-                  <p><strong>Link:</strong> <a href={selectedEvent.link} target="_blank" rel="noopener noreferrer">{selectedEvent.link}</a></p>
-                </DialogDescription>
-                <DialogClose asChild>
-                  <Button className="mt-4">Close</Button>
-                </DialogClose>
-              </>
-            ) : (
-              <>
-                <DialogTitle>Create a New Event</DialogTitle>
-                <DialogDescription>Schedule your events and meetings with the community.</DialogDescription>
-                <CreateEventForm onCreateEvent={handleCreateEvent} />
-                <DialogClose asChild>
-                  <Button className="mt-4">Close</Button>
-                </DialogClose>
-              </>
-            )}
-          </DialogContent>
-        </Dialog>
+      
+      <div className="container mx-auto px-4 py-8">
+        {/* Featured Events */}
+        {featuredEvents.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold mb-6">Upcoming Events</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featuredEvents.map(event => (
+                <div 
+                  key={event.id} 
+                  className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => handleSelectEvent(event)}
+                >
+                  <div className="h-3 bg-primary"></div>
+                  <div className="p-6">
+                    <div className="flex items-start justify-between mb-3">
+                      <h3 className="text-xl font-semibold line-clamp-1">{event.title}</h3>
+                    </div>
+                    
+                    <div className="flex items-center text-gray-600 mb-3">
+                      <CalendarIcon className="h-4 w-4 mr-2" />
+                      <span className="text-sm">{formatDateRange(event.start_time, event.end_time)}</span>
+                    </div>
+                    
+                    {event.description && (
+                      <p className="text-gray-600 line-clamp-2 mb-4 text-sm">{event.description}</p>
+                    )}
+                    
+                    <div className="flex justify-end">
+                      <Badge variant="outline" className="bg-primary/5 hover:bg-primary/10 text-primary">
+                        View Details
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {/* Calendar */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <h2 className="text-2xl font-bold">Events Calendar</h2>
+            
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Tabs defaultValue={view} onValueChange={(v) => setView(v as any)} className="w-full sm:w-auto">
+                <TabsList>
+                  <TabsTrigger value={Views.MONTH}>Month</TabsTrigger>
+                  <TabsTrigger value={Views.WEEK}>Week</TabsTrigger>
+                  <TabsTrigger value={Views.DAY}>Day</TabsTrigger>
+                  <TabsTrigger value={Views.AGENDA}>List</TabsTrigger>
+                </TabsList>
+              </Tabs>
+              
+              {user && (
+                <Button onClick={openCreateDialog} size="sm">
+                  <PlusCircle className="mr-2 h-4 w-4" /> Add Event
+                </Button>
+              )}
+            </div>
+          </div>
+          
+          {isLoading ? (
+            <div className="h-[500px] flex items-center justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+            </div>
+          ) : (
+            <Calendar
+              localizer={localizer}
+              events={events}
+              startAccessor="start_time"
+              endAccessor="end_time"
+              style={{ height: 650 }}
+              view={view as any}
+              onView={(newView) => setView(newView)}
+              onSelectEvent={handleSelectEvent}
+              components={{
+                event: EventComponent as any,
+              }}
+              className="mt-6"
+            />
+          )}
+        </div>
       </div>
-      <Calendar
-        localizer={localizer}
-        events={events}
-        startAccessor="start_time"
-        endAccessor="end_time"
-        style={{ height: 500 }}
-        onSelectEvent={handleSelectEvent}
-      />
+      
+      {/* Event Details/Creation Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={closeDialog}>
+        <DialogContent className="sm:max-w-md md:max-w-lg">
+          {isCreateMode ? (
+            <>
+              <DialogTitle className="text-xl font-bold">Create New Event</DialogTitle>
+              <DialogDescription>
+                Fill out the details to add a new event to the calendar.
+              </DialogDescription>
+              <CreateEventForm onCreateEvent={handleCreateEvent} onCancel={closeDialog} />
+            </>
+          ) : selectedEvent ? (
+            <>
+              <DialogTitle className="text-xl font-bold">{selectedEvent.title}</DialogTitle>
+              
+              <div className="space-y-4 mt-2">
+                <div className="flex items-start">
+                  <CalendarIcon className="h-5 w-5 text-primary mr-3 mt-0.5" />
+                  <div>
+                    <p className="font-medium">Date & Time</p>
+                    <p className="text-gray-600">
+                      {formatDateRange(selectedEvent.start_time, selectedEvent.end_time)}
+                    </p>
+                  </div>
+                </div>
+                
+                {selectedEvent.description && (
+                  <div className="flex items-start">
+                    <Info className="h-5 w-5 text-primary mr-3 mt-0.5" />
+                    <div>
+                      <p className="font-medium">Description</p>
+                      <p className="text-gray-600 whitespace-pre-line">{selectedEvent.description}</p>
+                    </div>
+                  </div>
+                )}
+                
+                {selectedEvent.link && (
+                  <div className="flex items-start">
+                    <LinkIcon className="h-5 w-5 text-primary mr-3 mt-0.5" />
+                    <div>
+                      <p className="font-medium">Meeting Link</p>
+                      <a 
+                        href={selectedEvent.link} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-primary hover:underline truncate block"
+                      >
+                        {selectedEvent.link}
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              <DialogFooter className="mt-6">
+                <Button onClick={closeDialog}>Close</Button>
+              </DialogFooter>
+            </>
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

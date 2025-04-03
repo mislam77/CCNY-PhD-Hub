@@ -66,7 +66,7 @@ export default function HeroSection() {
             <span className="text-primary-light">Thrive Together.</span>
           </h1>
           <p className="text-lg md:text-xl text-gray-200 max-w-3xl mx-auto mb-8">
-            Join the CCNY PhD Hub — where doctoral students connect, share resources, and build a thriving academic community.
+            Join the HIPE PhD Hub — where doctoral students connect, share resources, and build a thriving academic community.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/register" className="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-8 rounded-lg transition-colors duration-300 flex items-center justify-center">
