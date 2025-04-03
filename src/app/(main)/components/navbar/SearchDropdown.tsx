@@ -54,14 +54,14 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({ isOpen, onClose }) => {
       }`}
     >
       <div className="max-w-5xl mx-auto px-4">
-        <h2 className="text-white text-xl mb-4">Search CCNY PHD HUB</h2>
+        <h2 className="text-white text-xl mb-4">Search HIPE PhD HUB</h2>
         <form onSubmit={handleSearch} className="flex w-full">
           <input
             ref={searchInputRef}
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search CCNY PHD HUB"
+            placeholder="Search HIPE PhD HUB"
             className="w-full px-4 py-3 text-gray-dark border-0 focus:ring-2 focus:ring-primary rounded-l"
           />
           <button 

@@ -15,7 +15,7 @@ export default function FeaturesSection() {
           variants={staggerContainer}
           className="text-center mb-12"
         >
-          <motion.h2 variants={fadeIn} className="text-3xl md:text-4xl font-bold mb-3">Explore the CCNY PhD Community</motion.h2>
+          <motion.h2 variants={fadeIn} className="text-3xl md:text-4xl font-bold mb-3">Explore the HIPE PhD Community</motion.h2>
           <motion.p variants={fadeIn} className="text-gray-600 max-w-2xl mx-auto">
             Discover resources, connect with peers, and enhance your doctoral journey through our collaborative platform.
           </motion.p>

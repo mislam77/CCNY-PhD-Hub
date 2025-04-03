@@ -16,7 +16,7 @@ export default function CallToAction() {
         >
           <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to Join Our Community?</h2>
           <p className="text-xl text-primary-foreground/90 mb-10 max-w-3xl mx-auto">
-            Connect with fellow PhD students, access resources, and make the most of your doctoral journey at CCNY.
+            Connect with fellow PhD students, access resources, and make the most of your doctoral journey at CUNY.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/signup" className="bg-white text-primary hover:bg-gray-100 font-bold py-3 px-8 rounded-lg transition-colors duration-300">

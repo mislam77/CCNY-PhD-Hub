@@ -49,7 +49,7 @@ const Navbar: React.FC = () => {
               </button>
               
               <div className="flex-shrink-0 font-bold text-xl md:text-2xl text-white ml-2 md:ml-0">
-                <Link href="/">CCNY PHD HUB</Link>
+                <Link href="/">HIPE PhD HUB</Link>
               </div>
             </div>
 
