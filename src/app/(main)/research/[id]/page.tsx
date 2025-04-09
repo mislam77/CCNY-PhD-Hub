@@ -19,7 +19,11 @@ export default function ResearchGroupPage() {
   const [group, setGroup] = useState(null);
   const [activities, setActivities] = useState([]);
   const [discussions, setDiscussions] = useState([]);
+  const [filteredDiscussions, setFilteredDiscussions] = useState([]);
+  const [discussionSearchQuery, setDiscussionSearchQuery] = useState("");
   const [resources, setResources] = useState([]);
+  const [filteredResources, setFilteredResources] = useState([]);
+  const [resourceSearchQuery, setResourceSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [activityLoading, setActivityLoading] = useState(true);
   const [discussionsLoading, setDiscussionsLoading] = useState(true);
@@ -105,6 +109,7 @@ export default function ResearchGroupPage() {
         }
         const data = await response.json();
         setDiscussions(data.rows || []);
+        setFilteredDiscussions(data.rows || []);
       } catch (err) {
         console.error("Error fetching discussions:", err);
       } finally {
@@ -128,6 +133,7 @@ export default function ResearchGroupPage() {
         }
         const data = await response.json();
         setResources(data.resources || []);
+        setFilteredResources(data.resources || []);
       } catch (err) {
         console.error("Error fetching resources:", err);
       } finally {
@@ -237,6 +243,7 @@ export default function ResearchGroupPage() {
       const discussionsResponse = await fetch(`/api/research/${id}/discussions`);
       const discussionsData = await discussionsResponse.json();
       setDiscussions(discussionsData.rows || []);
+      setFilteredDiscussions(discussionsData.rows || []);
     } catch (err) {
       console.error("Error creating discussion:", err);
       alert(err.message);
@@ -450,6 +457,41 @@ export default function ResearchGroupPage() {
     );
   };
 
+  // Handle discussion search
+  const handleDiscussionSearch = (query) => {
+    setDiscussionSearchQuery(query);
+    if (!query) {
+      setFilteredDiscussions(discussions);
+    } else {
+      const lowerCaseQuery = query.toLowerCase();
+      setFilteredDiscussions(
+        discussions.filter(
+          (discussion) =>
+            discussion.title.toLowerCase().includes(lowerCaseQuery) ||
+            discussion.content.toLowerCase().includes(lowerCaseQuery)
+        )
+      );
+    }
+  };
+
+  // Handle resource search
+  const handleResourceSearch = (query) => {
+    setResourceSearchQuery(query);
+    if (!query) {
+      setFilteredResources(resources);
+    } else {
+      const lowerCaseQuery = query.toLowerCase();
+      setFilteredResources(
+        resources.filter(
+          (resource) =>
+            resource.title.toLowerCase().includes(lowerCaseQuery) ||
+            (resource.description && resource.description.toLowerCase().includes(lowerCaseQuery)) ||
+            resource.fileName.toLowerCase().includes(lowerCaseQuery)
+        )
+      );
+    }
+  };
+
   if (loading) return <div className="container mx-auto p-6">Loading...</div>;
   if (error) return <div className="container mx-auto p-6">Error: {error}</div>;
   if (!group) return <div className="container mx-auto p-6">Group not found</div>;
@@ -525,15 +567,43 @@ export default function ResearchGroupPage() {
                   />
                 </div>
 
+                {/* Search Bar */}
+                <div className="mb-4">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={discussionSearchQuery}
+                      onChange={(e) => handleDiscussionSearch(e.target.value)}
+                      placeholder="Search discussions..."
+                      className="w-full p-2 pl-8 border rounded-md"
+                    />
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      className="h-4 w-4 absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400" 
+                      fill="none" 
+                      viewBox="0 0 24 24" 
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                </div>
+
                 {discussionsLoading ? (
                   <div className="text-center py-8">Loading discussions...</div>
-                ) : discussions.length === 0 ? (
-                  <div className="bg-gray-100 p-6 rounded-lg text-center">
-                    <p>No discussions yet. Start a new one!</p>
-                  </div>
+                ) : filteredDiscussions.length === 0 ? (
+                  discussions.length === 0 ? (
+                    <div className="bg-gray-100 p-6 rounded-lg text-center">
+                      <p>No discussions yet. Start a new one!</p>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-100 p-6 rounded-lg text-center">
+                      <p>No discussions found matching "{discussionSearchQuery}". Try a different search term.</p>
+                    </div>
+                  )
                 ) : (
                   <div className="space-y-4">
-                    {discussions.map((discussion) => (
+                    {filteredDiscussions.map((discussion) => (
                       <div
                         key={discussion.id}
                         className="border rounded-lg p-4 hover:bg-gray-50"
@@ -659,15 +729,43 @@ export default function ResearchGroupPage() {
                   />
                 </div>
 
+                {/* Search Bar */}
+                <div className="mb-4">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={resourceSearchQuery}
+                      onChange={(e) => handleResourceSearch(e.target.value)}
+                      placeholder="Search resources..."
+                      className="w-full p-2 pl-8 border rounded-md"
+                    />
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      className="h-4 w-4 absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400" 
+                      fill="none" 
+                      viewBox="0 0 24 24" 
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                </div>
+
                 {resourcesLoading ? (
                   <div className="text-center py-8">Loading resources...</div>
-                ) : resources.length === 0 ? (
-                  <div className="bg-gray-100 p-6 rounded-lg text-center">
-                    <p>No resources yet. Add papers, links, or notes!</p>
-                  </div>
+                ) : filteredResources.length === 0 ? (
+                  resources.length === 0 ? (
+                    <div className="bg-gray-100 p-6 rounded-lg text-center">
+                      <p>No resources yet. Add papers, links, or notes!</p>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-100 p-6 rounded-lg text-center">
+                      <p>No resources found matching "{resourceSearchQuery}". Try a different search term.</p>
+                    </div>
+                  )
                 ) : (
                   <div className="space-y-2">
-                    {resources.map((resource) => (
+                    {filteredResources.map((resource) => (
                       <div
                         key={resource.id}
                         className="border rounded-lg p-4 hover:bg-gray-50"
